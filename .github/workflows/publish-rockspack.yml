@@ -7,13 +7,15 @@ on:
       - main
     paths:
       - docker/ubuntu/DOCKERFILE
-      - .github/workflows/publish-rocksdb.yml
+      - .github/workflows/publish-rockspack.yml
 
 env:
   IMAGE_NAME: haluan/rockspack
   ROCKSDB_VERSION: "11.1.1"
   ROCKSDB_COMMIT_SHORT: "6cdeb9d"
   UBUNTU_VERSION: "26.04"
+  IMAGE_TAG_CURRENT: rockspack-11.1.1-ubuntu26.04-devel
+  IMAGE_TAG_PINNED: rockspack-11.1.1-ubuntu26.04-6cdeb9d-devel
 
 jobs:
   publish:
@@ -44,8 +46,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ env.ROCKSDB_VERSION }}-ubuntu${{ env.UBUNTU_VERSION }}-devel
-            ${{ env.IMAGE_NAME }}:${{ env.ROCKSDB_VERSION }}-ubuntu${{ env.UBUNTU_VERSION }}-${{ env.ROCKSDB_COMMIT_SHORT }}-devel
+            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_CURRENT }}
+            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_PINNED }}
           build-args: |
             UBUNTU_VERSION=${{ env.UBUNTU_VERSION }}
             ROCKSDB_VERSION=v${{ env.ROCKSDB_VERSION }}
@@ -54,7 +56,7 @@ jobs:
       - name: Verify published image manifest and current platform
         run: |
           ./scripts/verify-image.sh \
-            --image "${IMAGE_NAME}:rockspack-${ROCKSDB_VERSION}-ubuntu${UBUNTU_VERSION}-devel" \
+            --image "${IMAGE_NAME}:${IMAGE_TAG_CURRENT}" \
             --platforms "linux/amd64 linux/arm64" \
             --ubuntu-version "${UBUNTU_VERSION}" \
             --run all
@@ -62,7 +64,7 @@ jobs:
       - name: Verify pinned image tag
         run: |
           ./scripts/verify-image.sh \
-            --image "${IMAGE_NAME}:rockspack-${ROCKSDB_VERSION}-ubuntu${UBUNTU_VERSION}-${ROCKSDB_COMMIT_SHORT}-devel" \
+            --image "${IMAGE_NAME}:${IMAGE_TAG_PINNED}" \
             --platforms "linux/amd64 linux/arm64" \
             --ubuntu-version "${UBUNTU_VERSION}" \
             --run skip
